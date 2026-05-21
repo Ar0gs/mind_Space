@@ -34,12 +34,14 @@ async function handleRegister() {
   if (pass.length < 8) { errEl.textContent = '↳ Password must be at least 8 characters.'; return; }
 
   errEl.textContent = 'Creating your account...';
-
+  
   const { data, error } = await sb.auth.signUp({
     email,
     password: pass,
     options: { data: { display_name: name, role: email === ADMIN_EMAIL ? 'admin' : 'user' } }
   });
+
+  console.log('Signup response:', JSON.stringify({ data, error }, null, 2));
 
   if (error) {
     errEl.textContent = '↳ ' + (error.message || 'Registration failed.');
