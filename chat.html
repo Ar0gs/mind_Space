@@ -301,21 +301,30 @@ async function init() {
 }
 
 async function getOrCreateConversation() {
-  // Check for existing conversation
-  let { data } = await sb.from('conversations')
+  // Check for existing active conversation
+  const { data: existing } = await sb.from('conversations')
     .select('*')
     .eq('user_id', currentUser.id)
+    .neq('status', 'closed')
     .order('created_at', { ascending: false })
-    .limit(1)
-    .single();
+    .limit(1);
+
+  let data = existing && existing.length > 0 ? existing[0] : null;
 
   if (!data) {
     // Create new conversation
-    const { data: newConv } = await sb.from('conversations').insert({
+    const { data: newConv, error } = await sb.from('conversations').insert({
       user_id: currentUser.id,
       status: 'active',
-      created_at: new Date().toISOString()
+      unread_admin: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     }).select().single();
+
+    if (error) {
+      console.error('[Chat] Failed to create conversation:', error);
+      return;
+    }
     data = newConv;
   }
 
@@ -345,7 +354,8 @@ async function loadMessages() {
 }
 
 function subscribeToMessages() {
-  msgSubscription = sb.channel('messages:' + conversationId)
+  // Channel name must be unique — use conv id directly
+  msgSubscription = sb.channel('user-msgs-' + conversationId)
     .on('postgres_changes', {
       event: 'INSERT',
       schema: 'public',
@@ -365,6 +375,7 @@ function subscribeToMessages() {
 }
 
 function subscribeToTyping() {
+  // Must match the channel name admin.html broadcasts on
   typingSubscription = sb.channel('typing:' + conversationId)
     .on('broadcast', { event: 'typing' }, ({ payload }) => {
       if (payload.user_id !== currentUser.id) {
@@ -483,6 +494,7 @@ function escHtml(str) {
 }
 
 function subscribeToCallSignals() {
+  // webrtc.js sends incoming_call to 'calls:{userId}' — must match here
   sb.channel('calls:' + currentUser.id)
     .on('broadcast', { event: 'incoming_call' }, ({ payload }) => {
       showIncomingCall(payload);
