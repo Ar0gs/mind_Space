@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MindSpace — Your Session</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --ink:#0A0A0A;--white:#FFFFFF;--off:#F5F3EF;--off-2:#EDEBE6;
+  --sage:#4A7C59;--sage-lo:#2E5239;--sage-light:rgba(74,124,89,.08);
+  --muted:#888888;--dim:#BBBBBB;--border:#E0DDD8;--border-2:#D0CCC5;
+  --err:#C0392B;--user-bubble:#0A0A0A;--counsellor-bubble:#4A7C59;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden}
+body{background:var(--off);color:var(--ink);font-family:'DM Sans',sans-serif;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column}
+
+/* TOP BAR */
+.topbar{height:64px;background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;flex-shrink:0;z-index:100}
+.topbar-logo{font-family:'Anton',sans-serif;font-size:20px;letter-spacing:2px;text-transform:uppercase;color:var(--ink);text-decoration:none;display:flex;align-items:center;gap:8px}
+.topbar-pip{width:7px;height:7px;background:var(--sage);flex-shrink:0}
+.topbar-status{display:flex;align-items:center;gap:28px}
+.counsellor-info{display:flex;align-items:center;gap:10px}
+.counsellor-avatar{width:38px;height:38px;background:var(--sage);display:flex;align-items:center;justify-content:center;font-family:'Anton',sans-serif;font-size:14px;color:var(--white);letter-spacing:1px;flex-shrink:0}
+.counsellor-name{font-size:13px;font-weight:600;color:var(--ink);letter-spacing:.3px}
+.counsellor-tag{font-size:10px;font-family:'DM Mono',monospace;letter-spacing:3px;color:var(--sage);text-transform:uppercase}
+.online-dot{width:8px;height:8px;border-radius:50%;background:#27ae60;flex-shrink:0;animation:pulse-green 2s infinite}
+@keyframes pulse-green{0%,100%{box-shadow:0 0 0 0 rgba(39,174,96,.4)}50%{box-shadow:0 0 0 6px rgba(39,174,96,0)}}
+.call-btns{display:flex;gap:8px}
+.call-btn{width:38px;height:38px;border:1.5px solid var(--border);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .2s;position:relative}
+.call-btn:hover{border-color:var(--sage);background:var(--sage-light)}
+.call-btn.active{border-color:var(--sage);background:var(--sage);color:white}
+.call-btn.end{border-color:var(--err);background:var(--err);color:white}
+.topbar-right{display:flex;align-items:center;gap:16px}
+.sign-out-btn{font-size:11px;font-family:'DM Mono',monospace;letter-spacing:2px;text-transform:uppercase;background:none;border:none;color:var(--muted);cursor:pointer;transition:color .2s}
+.sign-out-btn:hover{color:var(--ink)}
+
+/* MAIN LAYOUT */
+.main{flex:1;display:flex;overflow:hidden}
+
+/* SIDEBAR - session info */
+.sidebar{width:280px;background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
+.sidebar-section{padding:24px;border-bottom:1px solid var(--border)}
+.sidebar-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:5px;text-transform:uppercase;color:var(--dim);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.sidebar-label::before{content:'';width:16px;height:1px;background:var(--sage)}
+.my-name{font-family:'Anton',sans-serif;font-size:24px;letter-spacing:1px;text-transform:uppercase;color:var(--ink);line-height:1}
+.my-email{font-size:12px;font-weight:300;color:var(--muted);margin-top:4px}
+.session-stat{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)}
+.session-stat:last-child{border-bottom:none}
+.ss-label{font-size:12px;font-weight:300;color:var(--muted)}
+.ss-val{font-family:'DM Mono',monospace;font-size:12px;color:var(--ink);font-weight:500}
+.resources-list{display:flex;flex-direction:column;gap:8px}
+.resource-link{font-size:12px;color:var(--sage);text-decoration:none;display:flex;align-items:center;gap:8px;padding:8px;background:var(--sage-light);transition:background .2s}
+.resource-link:hover{background:rgba(74,124,89,.14)}
+.resource-link span{font-weight:500}
+.mood-btns{display:flex;gap:6px;flex-wrap:wrap}
+.mood-btn{padding:7px 12px;border:1.5px solid var(--border);background:transparent;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--muted);transition:all .2s}
+.mood-btn:hover,.mood-btn.selected{border-color:var(--sage);color:var(--sage);background:var(--sage-light)}
+
+/* CHAT AREA */
+.chat-area{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--off)}
+.chat-header{padding:20px 28px;border-bottom:1px solid var(--border);background:var(--off-2);flex-shrink:0}
+.chat-header-title{font-family:'Anton',sans-serif;font-size:18px;letter-spacing:1px;text-transform:uppercase;color:var(--ink)}
+.chat-header-sub{font-size:12px;font-weight:300;color:var(--muted);margin-top:2px}
+.messages{flex:1;overflow-y:auto;padding:24px 28px;display:flex;flex-direction:column;gap:16px;scroll-behavior:smooth}
+.messages::-webkit-scrollbar{width:4px}
+.messages::-webkit-scrollbar-track{background:transparent}
+.messages::-webkit-scrollbar-thumb{background:var(--border-2)}
+
+/* MESSAGES */
+.msg{display:flex;flex-direction:column;max-width:72%;animation:msgIn .3s cubic-bezier(.16,1,.3,1)}
+@keyframes msgIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.msg.user{align-self:flex-end;align-items:flex-end}
+.msg.counsellor{align-self:flex-start;align-items:flex-start}
+.msg-bubble{padding:14px 18px;font-size:14px;font-weight:300;line-height:1.7;position:relative}
+.msg.user .msg-bubble{background:var(--user-bubble);color:var(--white)}
+.msg.counsellor .msg-bubble{background:var(--white);color:var(--ink);border:1px solid var(--border)}
+.msg-meta{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;margin-top:5px}
+.msg-sender{font-weight:500;color:var(--sage)}
+
+/* TYPING INDICATOR */
+.typing-ind{display:none;align-self:flex-start;padding:14px 18px;background:var(--white);border:1px solid var(--border)}
+.typing-ind.show{display:flex;align-items:center;gap:5px}
+.typing-dot{width:7px;height:7px;border-radius:50%;background:var(--sage);animation:bounce .9s infinite}
+.typing-dot:nth-child(2){animation-delay:.15s}
+.typing-dot:nth-child(3){animation-delay:.3s}
+@keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-8px)}}
+
+/* SYSTEM MESSAGES */
+.sys-msg{text-align:center;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--dim);padding:8px;display:flex;align-items:center;gap:12px}
+.sys-msg::before,.sys-msg::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* INPUT */
+.input-area{padding:20px 28px;background:var(--white);border-top:1px solid var(--border);flex-shrink:0}
+.input-wrap{display:flex;gap:10px;align-items:flex-end}
+.msg-input{flex:1;background:var(--off);border:1.5px solid var(--border);padding:14px 18px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--ink);resize:none;outline:none;max-height:120px;transition:border-color .2s;line-height:1.5}
+.msg-input:focus{border-color:var(--sage)}
+.msg-input::placeholder{color:var(--dim)}
+.send-btn{width:48px;height:48px;background:var(--sage);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+.send-btn:hover{background:var(--sage-lo)}
+.send-btn svg{width:20px;height:20px;fill:white}
+.input-footer{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
+.input-hint{font-size:11px;font-weight:300;color:var(--dim);font-family:'DM Mono',monospace;letter-spacing:1px}
+.char-count{font-size:11px;font-family:'DM Mono',monospace;color:var(--dim)}
+
+/* CALL OVERLAY */
+#call-overlay{position:fixed;inset:0;z-index:9999;background:rgba(10,10,10,.97);display:none;flex-direction:column;align-items:center;justify-content:center;gap:24px}
+#call-overlay.show{display:flex}
+.call-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:6px;text-transform:uppercase;color:rgba(255,255,255,.3)}
+.call-name{font-family:'Anton',sans-serif;font-size:clamp(36px,6vw,72px);letter-spacing:3px;text-transform:uppercase;color:white}
+.call-status{font-size:14px;font-weight:300;color:rgba(255,255,255,.5);letter-spacing:1px}
+.call-timer{font-family:'DM Mono',monospace;font-size:24px;color:var(--sage);letter-spacing:4px;margin-top:8px}
+#remote-video{width:100%;max-width:800px;max-height:60vh;background:#111;border:1px solid rgba(255,255,255,.08);display:none;object-fit:cover}
+#local-video{position:absolute;bottom:120px;right:40px;width:180px;height:135px;background:#1a1a1a;object-fit:cover;border:1px solid rgba(255,255,255,.15);display:none}
+.call-controls{display:flex;gap:16px;margin-top:16px}
+.ctrl-btn{width:60px;height:60px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:22px;transition:all .2s}
+.ctrl-btn.mute{background:rgba(255,255,255,.1);color:white}
+.ctrl-btn.mute:hover,.ctrl-btn.mute.on{background:rgba(255,255,255,.2)}
+.ctrl-btn.cam{background:rgba(255,255,255,.1);color:white}
+.ctrl-btn.cam:hover,.ctrl-btn.cam.on{background:rgba(255,255,255,.2)}
+.ctrl-btn.end-call{background:#c0392b;color:white}
+.ctrl-btn.end-call:hover{background:#a93226}
+.incoming-call{background:var(--white);padding:32px 40px;text-align:center;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);border-left:4px solid var(--sage);box-shadow:0 32px 80px rgba(0,0,0,.5);z-index:10000;display:none;min-width:300px}
+.incoming-call.show{display:block}
+.ic-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:5px;text-transform:uppercase;color:var(--sage);margin-bottom:12px}
+.ic-name{font-family:'Anton',sans-serif;font-size:28px;letter-spacing:2px;text-transform:uppercase;color:var(--ink);margin-bottom:6px}
+.ic-type{font-size:13px;font-weight:300;color:var(--muted);margin-bottom:24px}
+.ic-btns{display:flex;gap:10px;justify-content:center}
+.ic-accept{padding:14px 28px;background:var(--sage);color:white;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;transition:background .2s}
+.ic-accept:hover{background:var(--sage-lo)}
+.ic-decline{padding:14px 28px;background:transparent;color:var(--err);border:1.5px solid var(--err);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;transition:all .2s}
+.ic-decline:hover{background:var(--err);color:white}
+
+/* EMPTY STATE */
+.empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;padding:40px}
+.empty-icon{font-size:48px;opacity:.3}
+.empty-title{font-family:'Anton',sans-serif;font-size:28px;letter-spacing:2px;text-transform:uppercase;color:var(--ink)}
+.empty-sub{font-size:14px;font-weight:300;color:var(--muted);line-height:1.8;max-width:320px}
+
+/* RESPONSIVE */
+@media(max-width:768px){.sidebar{display:none}.topbar{padding:0 16px}.messages{padding:16px}.input-area{padding:12px 16px}.call-btns .call-btn:nth-child(n+2){display:none}}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <a href="index.html" class="topbar-logo"><span class="topbar-pip"></span>MindSpace</a>
+  <div class="topbar-status">
+    <div class="counsellor-info">
+      <div class="counsellor-avatar" id="counsellor-avatar">MS</div>
+      <div>
+        <div class="counsellor-name">MindSpace Counsellor</div>
+        <div class="counsellor-tag">
+          <span class="online-dot" style="display:inline-block;margin-right:4px"></span>
+          Verified · Available
+        </div>
+      </div>
+    </div>
+    <div class="call-btns">
+      <button class="call-btn" id="voice-call-btn" onclick="initiateCall('audio')" title="Voice Call">📞</button>
+      <button class="call-btn" id="video-call-btn" onclick="initiateCall('video')" title="Video Call">📹</button>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <span id="user-greeting" style="font-size:13px;font-weight:300;color:var(--muted)"></span>
+    <button class="sign-out-btn" onclick="signOut()">Sign Out</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Your Session</div>
+      <div class="my-name" id="sidebar-name">Loading...</div>
+      <div class="my-email" id="sidebar-email"></div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Session Info</div>
+      <div class="session-stat"><span class="ss-label">Started</span><span class="ss-val" id="session-start">—</span></div>
+      <div class="session-stat"><span class="ss-label">Messages</span><span class="ss-val" id="msg-count">0</span></div>
+      <div class="session-stat"><span class="ss-label">Status</span><span class="ss-val" style="color:var(--sage)">Active</span></div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">How Are You Feeling?</div>
+      <div class="mood-btns">
+        <button class="mood-btn" onclick="setMood(this,'😔 Low')">😔 Low</button>
+        <button class="mood-btn" onclick="setMood(this,'😐 Okay')">😐 Okay</button>
+        <button class="mood-btn" onclick="setMood(this,'😊 Good')">😊 Good</button>
+        <button class="mood-btn" onclick="setMood(this,'😰 Anxious')">😰 Anxious</button>
+        <button class="mood-btn" onclick="setMood(this,'😡 Frustrated')">😡 Frustrated</button>
+        <button class="mood-btn" onclick="setMood(this,'😢 Sad')">😢 Sad</button>
+      </div>
+    </div>
+    <div class="sidebar-section" style="flex:1">
+      <div class="sidebar-label">Quick Resources</div>
+      <div class="resources-list">
+        <a class="resource-link" href="tel:08008002000"><span>🆘</span><span>Crisis Line: 0800-800-2000</span></a>
+        <a class="resource-link" href="#"><span>📖</span><span>Breathing Exercises</span></a>
+        <a class="resource-link" href="#"><span>🧘</span><span>Grounding Techniques</span></a>
+        <a class="resource-link" href="#"><span>📋</span><span>Mood Journal Tips</span></a>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHAT -->
+  <div class="chat-area">
+    <div class="chat-header">
+      <div class="chat-header-title">Your Private Session</div>
+      <div class="chat-header-sub">Everything here is confidential. Share what you're comfortable with.</div>
+    </div>
+    <div class="messages" id="messages">
+      <div class="empty-state" id="empty-state">
+        <div class="empty-icon">💚</div>
+        <div class="empty-title">You're in a safe space.</div>
+        <div class="empty-sub">Type your first message below. A verified counsellor will respond as soon as they're available. There are no right or wrong things to say here.</div>
+      </div>
+      <div class="typing-ind" id="typing-ind">
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <span style="font-size:12px;color:var(--muted);margin-left:6px;font-weight:300">Counsellor is typing...</span>
+      </div>
+    </div>
+    <div class="input-area">
+      <div class="input-wrap">
+        <textarea class="msg-input" id="msg-input" rows="1" placeholder="Type your message here — you're in a safe space..." maxlength="2000" oninput="onInputChange(this)" onkeydown="handleKey(event)"></textarea>
+        <button class="send-btn" onclick="sendMessage()">
+          <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+        </button>
+      </div>
+      <div class="input-footer">
+        <span class="input-hint">Enter to send · Shift+Enter for new line</span>
+        <span class="char-count" id="char-count">0/2000</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CALL OVERLAY -->
+<div id="call-overlay">
+  <div class="call-label" id="call-label">Voice Call</div>
+  <div class="call-name">Counsellor</div>
+  <div class="call-status" id="call-status">Connecting...</div>
+  <div class="call-timer" id="call-timer">00:00</div>
+  <video id="remote-video" autoplay playsinline></video>
+  <video id="local-video" autoplay muted playsinline></video>
+  <div class="call-controls">
+    <button class="ctrl-btn mute" id="mute-btn" onclick="toggleMute()" title="Mute">🎤</button>
+    <button class="ctrl-btn cam" id="cam-btn" onclick="toggleCamera()" title="Camera">📷</button>
+    <button class="ctrl-btn end-call" onclick="endCall()" title="End Call">📵</button>
+  </div>
+</div>
+
+<!-- INCOMING CALL -->
+<div class="incoming-call" id="incoming-call">
+  <div class="ic-label">Incoming Call</div>
+  <div class="ic-name">Your Counsellor</div>
+  <div class="ic-type" id="ic-type">Voice Call</div>
+  <div class="ic-btns">
+    <button class="ic-accept" onclick="acceptCall()">✓ Accept</button>
+    <button class="ic-decline" onclick="declineCall()">✗ Decline</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="auth.js"></script>
+<script src="webrtc.js"></script>
+<script>
+let currentUser = null;
+let conversationId = null;
+let msgSubscription = null;
+let typingSubscription = null;
+let typingTimeout = null;
+let msgCountVal = 0;
+
+// ── INIT ──
+async function init() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { window.location.href = 'index.html'; return; }
+
+  currentUser = session.user;
+  const profile = await getProfile(currentUser.id);
+  const name = profile?.display_name || currentUser.email.split('@')[0];
+
+  document.getElementById('user-greeting').textContent = 'Hi, ' + name;
+  document.getElementById('sidebar-name').textContent = name;
+  document.getElementById('sidebar-email').textContent = currentUser.email;
+  document.getElementById('session-start').textContent = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+
+  // Initialize WebRTC
+  initWebRTC(currentUser.id, 'user');
+
+  // Get or create conversation
+  await getOrCreateConversation();
+}
+
+async function getOrCreateConversation() {
+  // Check for existing conversation
+  let { data } = await sb.from('conversations')
+    .select('*')
+    .eq('user_id', currentUser.id)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single();
+
+  if (!data) {
+    // Create new conversation
+    const { data: newConv } = await sb.from('conversations').insert({
+      user_id: currentUser.id,
+      status: 'active',
+      created_at: new Date().toISOString()
+    }).select().single();
+    data = newConv;
+  }
+
+  conversationId = data?.id;
+  if (conversationId) {
+    await loadMessages();
+    subscribeToMessages();
+    subscribeToTyping();
+    subscribeToCallSignals();
+  }
+}
+
+// ── MESSAGES ──
+async function loadMessages() {
+  const { data } = await sb.from('messages')
+    .select('*')
+    .eq('conversation_id', conversationId)
+    .order('created_at', { ascending: true });
+
+  if (data && data.length > 0) {
+    document.getElementById('empty-state').style.display = 'none';
+    data.forEach(m => renderMessage(m));
+    scrollToBottom();
+    msgCountVal = data.length;
+    document.getElementById('msg-count').textContent = msgCountVal;
+  }
+}
+
+function subscribeToMessages() {
+  msgSubscription = sb.channel('messages:' + conversationId)
+    .on('postgres_changes', {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'messages',
+      filter: 'conversation_id=eq.' + conversationId
+    }, payload => {
+      // Don't re-render own messages (already rendered optimistically)
+      if (payload.new.sender_id !== currentUser.id) {
+        document.getElementById('empty-state').style.display = 'none';
+        renderMessage(payload.new);
+        scrollToBottom();
+        msgCountVal++;
+        document.getElementById('msg-count').textContent = msgCountVal;
+      }
+    })
+    .subscribe();
+}
+
+function subscribeToTyping() {
+  typingSubscription = sb.channel('typing:' + conversationId)
+    .on('broadcast', { event: 'typing' }, ({ payload }) => {
+      if (payload.user_id !== currentUser.id) {
+        showTyping(payload.is_typing);
+      }
+    })
+    .subscribe();
+}
+
+async function sendMessage() {
+  const input = document.getElementById('msg-input');
+  const text = input.value.trim();
+  if (!text || !conversationId) return;
+
+  input.value = '';
+  input.style.height = 'auto';
+  document.getElementById('char-count').textContent = '0/2000';
+
+  // Optimistic render
+  const tempMsg = {
+    id: 'temp-' + Date.now(),
+    content: text,
+    sender_id: currentUser.id,
+    sender_role: 'user',
+    created_at: new Date().toISOString(),
+    conversation_id: conversationId
+  };
+  document.getElementById('empty-state').style.display = 'none';
+  renderMessage(tempMsg);
+  scrollToBottom();
+  msgCountVal++;
+  document.getElementById('msg-count').textContent = msgCountVal;
+
+  // Send to DB
+  await sb.from('messages').insert({
+    conversation_id: conversationId,
+    sender_id: currentUser.id,
+    sender_role: 'user',
+    content: text,
+    created_at: new Date().toISOString()
+  });
+
+  // Broadcast typing stopped
+  broadcastTyping(false);
+}
+
+function renderMessage(msg) {
+  const isUser = msg.sender_role === 'user';
+  const div = document.createElement('div');
+  div.className = 'msg ' + (isUser ? 'user' : 'counsellor');
+  div.id = 'msg-' + msg.id;
+  const time = new Date(msg.created_at).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+  div.innerHTML = `
+    <div class="msg-bubble">${escHtml(msg.content)}</div>
+    <div class="msg-meta">${time}${!isUser ? ' · <span class="msg-sender">Counsellor</span>' : ''}</div>
+  `;
+  // Insert before typing indicator
+  const typing = document.getElementById('typing-ind');
+  document.getElementById('messages').insertBefore(div, typing);
+}
+
+function scrollToBottom() {
+  const el = document.getElementById('messages');
+  el.scrollTop = el.scrollHeight;
+}
+
+function showTyping(show) {
+  document.getElementById('typing-ind').classList.toggle('show', show);
+  if (show) scrollToBottom();
+}
+
+function broadcastTyping(isTyping) {
+  if (!typingSubscription) return;
+  sb.channel('typing:' + conversationId).send({
+    type: 'broadcast',
+    event: 'typing',
+    payload: { user_id: currentUser.id, is_typing: isTyping }
+  });
+}
+
+// ── INPUT HANDLING ──
+function onInputChange(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+  document.getElementById('char-count').textContent = el.value.length + '/2000';
+  // Typing broadcast
+  broadcastTyping(el.value.length > 0);
+  clearTimeout(typingTimeout);
+  typingTimeout = setTimeout(() => broadcastTyping(false), 3000);
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+function setMood(btn, mood) {
+  document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  // Log mood
+  if (conversationId) {
+    sb.from('messages').insert({
+      conversation_id: conversationId,
+      sender_id: currentUser.id,
+      sender_role: 'system',
+      content: '[ Mood check-in: ' + mood + ' ]',
+      created_at: new Date().toISOString()
+    });
+  }
+}
+
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
+
+function subscribeToCallSignals() {
+  sb.channel('calls:' + currentUser.id)
+    .on('broadcast', { event: 'incoming_call' }, ({ payload }) => {
+      showIncomingCall(payload);
+    })
+    .on('broadcast', { event: 'call_ended' }, () => {
+      endCall();
+    })
+    .subscribe();
+}
+
+init();
+</script>
+</body>
+</html>
