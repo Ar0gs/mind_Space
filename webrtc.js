@@ -95,18 +95,23 @@ async function initiateCall(type) {
     const offer = await peerConnection.createOffer();
     await peerConnection.setLocalDescription(offer);
 
-    // Setup signal channel
+    // Setup signal channel BEFORE sending offer so we can receive the answer
     setupSignalChannel();
 
-    // Send call invitation to target
-    await sb.channel('calls:' + targetUserId).send({
-      type: 'broadcast',
-      event: 'incoming_call',
-      payload: {
-        from: myUserId,
-        from_role: myRole,
-        call_type: type,
-        offer: offer
+    // Send call invitation to target via their 'calls:{id}' channel
+    const callChannel = sb.channel('calls:' + targetUserId);
+    await callChannel.subscribe(async (status) => {
+      if (status === 'SUBSCRIBED') {
+        await callChannel.send({
+          type: 'broadcast',
+          event: 'incoming_call',
+          payload: {
+            from: myUserId,
+            from_role: myRole,
+            call_type: type,
+            offer: offer
+          }
+        });
       }
     });
 
@@ -213,10 +218,13 @@ function declineCall() {
 
 // ── SIGNALLING ──
 function setupSignalChannel() {
+  // Each user listens on their own signal channel: 'signal:{myUserId}'
   signalChannel = sb.channel('signal:' + myUserId)
     .on('broadcast', { event: 'call_answer' }, async ({ payload }) => {
       if (peerConnection && payload.answer) {
-        await peerConnection.setRemoteDescription(new RTCSessionDescription(payload.answer));
+        try {
+          await peerConnection.setRemoteDescription(new RTCSessionDescription(payload.answer));
+        } catch(e) { console.error('[WebRTC] setRemoteDescription error:', e); }
       }
     })
     .on('broadcast', { event: 'ice_candidate' }, async ({ payload }) => {
@@ -224,12 +232,15 @@ function setupSignalChannel() {
         try { await peerConnection.addIceCandidate(new RTCIceCandidate(payload.candidate)); } catch(e) {}
       }
     })
-    .on('broadcast', { event: 'call_ended' }, () => endCall())
+    .on('broadcast', { event: 'call_ended' }, () => {
+      endCall();
+    })
     .subscribe();
 }
 
 async function sendSignal(event, payload) {
   if (!targetUserId) return;
+  // Send to the target's signal channel
   await sb.channel('signal:' + targetUserId).send({ type: 'broadcast', event, payload });
 }
 
