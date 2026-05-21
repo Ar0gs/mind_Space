@@ -491,11 +491,13 @@ async function selectConversation(convId, userId) {
         scrollToBottom();
         count++;
         document.getElementById('up-msgs').textContent = count;
+        // Also mark unread dot gone since we're viewing
+        sb.from('conversations').update({ unread_admin: false }).eq('id', convId);
       }
     })
     .subscribe();
 
-  typingSubscription = sb.channel('admin-typing-' + convId)
+  typingSubscription = sb.channel('typing:' + convId)
     .on('broadcast', { event: 'typing' }, ({ payload }) => {
       if (payload.user_id !== currentUser.id) showTyping(payload.is_typing);
     })
@@ -532,7 +534,11 @@ function subscribeToAllMessages() {
 }
 
 function subscribeToCallSignals() {
-  sb.channel('admin-calls:' + currentUser.id)
+  // webrtc.js sends incoming_call to 'calls:{userId}' — must use same channel
+  sb.channel('calls:' + currentUser.id)
+    .on('broadcast', { event: 'incoming_call' }, ({ payload }) => {
+      showIncomingCall(payload);
+    })
     .on('broadcast', { event: 'call_ended' }, () => endCall())
     .subscribe();
 }
@@ -593,6 +599,7 @@ function showTyping(show) {
 
 function broadcastTyping(isTyping) {
   if (!activeConvId) return;
+  // Must match the channel chat.html subscribes to: 'typing:{convId}'
   sb.channel('typing:' + activeConvId).send({
     type: 'broadcast', event: 'typing',
     payload: { user_id: currentUser.id, is_typing: isTyping }
