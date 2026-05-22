@@ -9,7 +9,7 @@
 <style>
 :root{
   --ink:#0A0A0A;--white:#FFFFFF;--off:#F5F3EF;--off-2:#EDEBE6;
-  --sage:#1900ff;--sage-lo:#2E5239;--sage-light:rgba(74,124,89,.08);
+  --sage:#1900ff;--sage-lo:#1200b3;--sage-light:rgba(25,0,255,.08);
   --muted:#888888;--dim:#BBBBBB;--border:#E0DDD8;--border-2:#D0CCC5;
   --err:#C0392B;--user-bubble:#0A0A0A;--counsellor-bubble:#1900ff;
 }
@@ -54,7 +54,7 @@ body{background:var(--off);color:var(--ink);font-family:'DM Sans',sans-serif;-we
 .ss-val{font-family:'DM Mono',monospace;font-size:11px;color:var(--ink);font-weight:500}
 .resources-list{display:flex;flex-direction:column;gap:6px}
 .resource-link{font-size:11px;color:var(--sage);text-decoration:none;display:flex;align-items:center;gap:7px;padding:7px;background:var(--sage-light);transition:background .2s}
-.resource-link:hover{background:rgba(74,124,89,.14)}
+.resource-link:hover{background:rgba(25,0,255,.14)}
 .mood-btns{display:flex;gap:5px;flex-wrap:wrap}
 .mood-btn{padding:6px 10px;border:1.5px solid var(--border);background:transparent;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:11px;color:var(--muted);transition:all .2s;border-radius:2px}
 .mood-btn:hover,.mood-btn.selected{border-color:var(--sage);color:var(--sage);background:var(--sage-light)}
@@ -67,7 +67,7 @@ body{background:var(--off);color:var(--ink);font-family:'DM Sans',sans-serif;-we
 .chat-header-sub{font-size:11px;font-weight:300;color:var(--muted);margin-top:2px}
 
 /* REPLY PREVIEW */
-.reply-preview-bar{display:none;padding:8px 16px;background:var(--sage-light);border-bottom:1px solid rgba(74,124,89,.2);flex-shrink:0;align-items:center;gap:10px}
+.reply-preview-bar{display:none;padding:8px 16px;background:var(--sage-light);border-bottom:1px solid rgba(25,0,255,.2);flex-shrink:0;align-items:center;gap:10px}
 .reply-preview-bar.show{display:flex}
 .rp-quote{flex:1;font-size:12px;color:var(--muted);border-left:2px solid var(--sage);padding-left:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rp-cancel{background:none;border:none;cursor:pointer;color:var(--muted);font-size:16px;padding:2px 6px}
@@ -764,6 +764,24 @@ function escHtml(str) {
 }
 
 init();
+</script>
+<!-- #RiseWithIMPACT Ticker -->
+<style>body{padding-bottom:28px!important}</style>
+<div id="rwi-ticker" style="position:fixed;bottom:0;left:0;right:0;z-index:99999;height:28px;overflow:hidden;background:rgba(25,0,255,0.92);backdrop-filter:blur(6px);display:flex;align-items:center;border-top:1px solid rgba(255,255,255,0.12);pointer-events:none;">
+  <div id="rwi-track" style="display:flex;align-items:center;white-space:nowrap;animation:rwi-scroll 22s linear infinite;will-change:transform;"></div>
+</div>
+<style>
+@keyframes rwi-scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+#rwi-track span{font-family:'DM Mono','JetBrains Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#ffffff;padding:0 28px;opacity:.9}
+#rwi-track span.dot{color:rgba(255,255,255,.35);padding:0 4px;font-size:7px;letter-spacing:0;vertical-align:middle}
+</style>
+<script>
+(function(){
+  var t=document.getElementById('rwi-track');
+  var seg='<span>#RiseWithIMPACT</span><span class="dot">&#10022;</span>';
+  var h='';for(var i=0;i<24;i++)h+=seg;
+  t.innerHTML=h+h;
+})();
 </script>
 </body>
 </html>
