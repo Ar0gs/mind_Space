@@ -16,7 +16,7 @@
     --surface2: #1a1d26;
     --surface3: #22263a;
     --border: #2a2f45;
-    --accent: #6c63ff;
+    --accent: #1900ff;
     --accent2: #ff6584;
     --accent3: #43e97b;
     --warn: #ffb347;
@@ -24,7 +24,7 @@
     --text: #e8eaf0;
     --text2: #8890b0;
     --text3: #555d80;
-    --tag-impact: #6c63ff;
+    --tag-impact: #1900ff;
     --radius: 12px;
     --shadow: 0 4px 24px rgba(0,0,0,0.4);
   }
@@ -63,7 +63,7 @@
 
   .auth-logo .badge {
     display: inline-block;
-    background: linear-gradient(135deg, #6c63ff, #ff6584);
+    background: linear-gradient(135deg, #1900ff, #ff6584);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     font-size: 13px;
@@ -1290,6 +1290,24 @@ function toast(msg, type = 'info') {
 document.getElementById('msg-modal').addEventListener('click', e => {
   if (e.target === document.getElementById('msg-modal')) closeMsgModal();
 });
+</script>
+<!-- #RiseWithIMPACT Ticker -->
+<style>body{padding-bottom:28px!important}</style>
+<div id="rwi-ticker" style="position:fixed;bottom:0;left:0;right:0;z-index:99999;height:28px;overflow:hidden;background:rgba(25,0,255,0.92);backdrop-filter:blur(6px);display:flex;align-items:center;border-top:1px solid rgba(255,255,255,0.12);pointer-events:none;">
+  <div id="rwi-track" style="display:flex;align-items:center;white-space:nowrap;animation:rwi-scroll 22s linear infinite;will-change:transform;"></div>
+</div>
+<style>
+@keyframes rwi-scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+#rwi-track span{font-family:'DM Mono','JetBrains Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#ffffff;padding:0 28px;opacity:.9}
+#rwi-track span.dot{color:rgba(255,255,255,.35);padding:0 4px;font-size:7px;letter-spacing:0;vertical-align:middle}
+</style>
+<script>
+(function(){
+  var t=document.getElementById('rwi-track');
+  var seg='<span>#RiseWithIMPACT</span><span class="dot">&#10022;</span>';
+  var h='';for(var i=0;i<24;i++)h+=seg;
+  t.innerHTML=h+h;
+})();
 </script>
 </body>
 </html>
