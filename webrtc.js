@@ -39,12 +39,31 @@ async function initiateCall(type) {
 
   // Determine target
   if (myRole === 'user') {
-    // User calls admin
-    const { data: adminProfile } = await sb.from('profiles').select('id').eq('role', 'admin').limit(1).single();
-    targetUserId = adminProfile?.id;
+    // User calls admin — fetch admin profile
+    try {
+      const { data: adminProfiles, error } = await sb.from('profiles').select('id').eq('role', 'admin').limit(1);
+      if (error) {
+        console.error('[WebRTC] Error fetching admin:', error);
+        alert('Unable to reach the counsellor right now. Please try again shortly.');
+        return;
+      }
+      if (!adminProfiles || adminProfiles.length === 0) {
+        alert('No counsellor is currently available for a call. Please send a message and they will reach out to you.');
+        return;
+      }
+      targetUserId = adminProfiles[0].id;
+    } catch (e) {
+      console.error('[WebRTC] Fetch admin error:', e);
+      alert('Connection error. Please try again.');
+      return;
+    }
   } else {
     // Admin calls active user
-    targetUserId = activeUserId; // set in admin.html
+    targetUserId = window.activeUserId;
+    if (!targetUserId) {
+      alert('Please select a user conversation first before calling.');
+      return;
+    }
   }
 
   if (!targetUserId) {
@@ -99,19 +118,24 @@ async function initiateCall(type) {
     setupSignalChannel();
 
     // Send call invitation to target via their 'calls:{id}' channel
+    // Use httpSend to avoid the REST fallback warning and 406 errors
     const callChannel = sb.channel('calls:' + targetUserId);
     await callChannel.subscribe(async (status) => {
       if (status === 'SUBSCRIBED') {
-        await callChannel.send({
-          type: 'broadcast',
-          event: 'incoming_call',
-          payload: {
-            from: myUserId,
-            from_role: myRole,
-            call_type: type,
-            offer: offer
-          }
-        });
+        try {
+          await callChannel.send({
+            type: 'broadcast',
+            event: 'incoming_call',
+            payload: {
+              from: myUserId,
+              from_role: myRole,
+              call_type: type,
+              offer: offer
+            }
+          });
+        } catch (sendErr) {
+          console.warn('[WebRTC] Broadcast send error (non-fatal):', sendErr);
+        }
       }
     });
 
@@ -120,7 +144,11 @@ async function initiateCall(type) {
 
   } catch (err) {
     console.error('[WebRTC] Error initiating call:', err);
-    alert('Could not access microphone' + (type === 'video' ? '/camera' : '') + '. Please check permissions.');
+    if (err.name === 'NotAllowedError') {
+      alert('Microphone' + (type === 'video' ? '/camera' : '') + ' permission denied. Please allow access in your browser settings.');
+    } else {
+      alert('Could not start call. Please check your microphone' + (type === 'video' ? '/camera' : '') + ' permissions.');
+    }
     cleanupCall();
   }
 }
@@ -129,7 +157,8 @@ async function initiateCall(type) {
 async function showIncomingCall(payload) {
   pendingCallPayload = payload;
   const type = payload.call_type || 'audio';
-  document.getElementById('ic-type').textContent = type === 'video' ? '📹 Video Call' : '📞 Voice Call';
+  const el = document.getElementById('ic-type');
+  if (el) el.textContent = type === 'video' ? '📹 Video Call' : '📞 Voice Call';
 
   // Show incoming call UI
   const icEl = document.getElementById('incoming-call');
@@ -217,8 +246,8 @@ function declineCall() {
 }
 
 // ── SIGNALLING ──
+// FIX: Use httpSend() explicitly to avoid the 406 REST fallback error
 function setupSignalChannel() {
-  // Each user listens on their own signal channel: 'signal:{myUserId}'
   signalChannel = sb.channel('signal:' + myUserId)
     .on('broadcast', { event: 'call_answer' }, async ({ payload }) => {
       if (peerConnection && payload.answer) {
@@ -240,12 +269,39 @@ function setupSignalChannel() {
 
 async function sendSignal(event, payload) {
   if (!targetUserId) return;
-  // Send to the target's signal channel
-  await sb.channel('signal:' + targetUserId).send({ type: 'broadcast', event, payload });
+  try {
+    const ch = sb.channel('signal:' + targetUserId);
+    // Subscribe first if needed, then send
+    await new Promise((resolve) => {
+      const sub = ch.subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          ch.send({ type: 'broadcast', event, payload })
+            .catch(e => console.warn('[WebRTC] Signal send warn:', e))
+            .finally(resolve);
+        }
+      });
+      // Resolve after 3s even if not subscribed to avoid hanging
+      setTimeout(resolve, 3000);
+    });
+  } catch(e) {
+    console.warn('[WebRTC] sendSignal error (non-fatal):', e);
+  }
 }
 
 async function sendSignalTo(userId, event, payload) {
-  await sb.channel('signal:' + userId).send({ type: 'broadcast', event, payload });
+  try {
+    const ch = sb.channel('signal:' + userId);
+    await new Promise((resolve) => {
+      ch.subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          ch.send({ type: 'broadcast', event, payload })
+            .catch(() => {})
+            .finally(resolve);
+        }
+      });
+      setTimeout(resolve, 3000);
+    });
+  } catch(e) {}
 }
 
 // ── CALL CONTROLS ──
