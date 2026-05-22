@@ -9,7 +9,7 @@
 <style>
 :root{
   --ink:#0A0A0A;--white:#FFFFFF;--off:#F5F3EF;--off-2:#EDEBE6;
-  --sage:#1900ff;--sage-lo:#2E5239;--sage-light:rgba(74,124,89,.08);--sage-mid:rgba(74,124,89,.15);
+  --sage:#1900ff;--sage-lo:#1200b3;--sage-light:rgba(25,0,255,.08);--sage-mid:rgba(25,0,255,.15);
   --gold:#D4A017;--muted:#888888;--dim:#BBBBBB;--border:#E0DDD8;--border-2:#D0CCC5;
   --err:#C0392B;--warn:#E67E22;
 }
@@ -83,7 +83,7 @@ body{background:var(--off);color:var(--ink);font-family:'DM Sans',sans-serif;-we
 .badge.active{border-color:var(--sage);color:var(--sage)}
 .badge.waiting{border-color:var(--warn);color:var(--warn)}
 .badge.closed{border-color:var(--dim);color:var(--dim)}
-.badge.mood{border-color:rgba(74,124,89,.3);color:var(--sage);background:var(--sage-light)}
+.badge.mood{border-color:rgba(25,0,255,.3);color:var(--sage);background:var(--sage-light)}
 .unread-dot{position:absolute;top:14px;right:12px;width:7px;height:7px;border-radius:50%;background:var(--sage)}
 .no-convs{padding:40px 16px;text-align:center;color:var(--muted);font-size:13px;font-weight:300;line-height:1.8}
 
@@ -110,7 +110,7 @@ body{background:var(--off);color:var(--ink);font-family:'DM Sans',sans-serif;-we
 @keyframes rwi-scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 
 /* REPLY PREVIEW */
-.reply-preview-bar{display:none;padding:8px 16px;background:var(--sage-light);border-bottom:1px solid rgba(74,124,89,.2);flex-shrink:0;align-items:center;gap:10px}
+.reply-preview-bar{display:none;padding:8px 16px;background:var(--sage-light);border-bottom:1px solid rgba(25,0,255,.2);flex-shrink:0;align-items:center;gap:10px}
 .reply-preview-bar.show{display:flex}
 .rp-quote{flex:1;font-size:12px;color:var(--muted);border-left:2px solid var(--sage);padding-left:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rp-cancel{background:none;border:none;cursor:pointer;color:var(--muted);font-size:16px;padding:2px 6px;transition:color .2s}
@@ -148,7 +148,7 @@ body{background:var(--off);color:var(--ink);font-family:'DM Sans',sans-serif;-we
 .vw-bar{width:3px;background:currentColor;opacity:.5;border-radius:2px;animation:none}
 .voice-duration{font-family:'DM Mono',monospace;font-size:10px;opacity:.7}
 
-.typing-ind{display:none;align-self:flex-start;padding:10px 14px;background:var(--sage-light);border:1px solid rgba(74,124,89,.2)}
+.typing-ind{display:none;align-self:flex-start;padding:10px 14px;background:var(--sage-light);border:1px solid rgba(25,0,255,.2)}
 .typing-ind.show{display:flex;align-items:center;gap:5px}
 .typing-dot{width:5px;height:5px;border-radius:50%;background:var(--sage);animation:bounce .9s infinite}
 .typing-dot:nth-child(2){animation-delay:.15s}
@@ -1094,6 +1094,24 @@ function escHtml(str) {
 }
 
 init();
+</script>
+<!-- #RiseWithIMPACT Ticker -->
+<style>body{padding-bottom:28px!important}</style>
+<div id="rwi-ticker" style="position:fixed;bottom:0;left:0;right:0;z-index:99999;height:28px;overflow:hidden;background:rgba(25,0,255,0.92);backdrop-filter:blur(6px);display:flex;align-items:center;border-top:1px solid rgba(255,255,255,0.12);pointer-events:none;">
+  <div id="rwi-track" style="display:flex;align-items:center;white-space:nowrap;animation:rwi-scroll 22s linear infinite;will-change:transform;"></div>
+</div>
+<style>
+@keyframes rwi-scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+#rwi-track span{font-family:'DM Mono','JetBrains Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#ffffff;padding:0 28px;opacity:.9}
+#rwi-track span.dot{color:rgba(255,255,255,.35);padding:0 4px;font-size:7px;letter-spacing:0;vertical-align:middle}
+</style>
+<script>
+(function(){
+  var t=document.getElementById('rwi-track');
+  var seg='<span>#RiseWithIMPACT</span><span class="dot">&#10022;</span>';
+  var h='';for(var i=0;i<24;i++)h+=seg;
+  t.innerHTML=h+h;
+})();
 </script>
 </body>
 </html>
