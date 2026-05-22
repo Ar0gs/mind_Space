@@ -16,8 +16,8 @@
   --gold:#D4A017;
   --gold-hi:#F0C040;
   --gold-lo:#A87800;
-  --sage:#3728b9;
-  --sage-lo:#1900ff;
+  --sage:#1900ff;
+  --sage-lo:#1200b3;
   --muted:#888888;
   --dim:#BBBBBB;
   --border:#E0DDD8;
@@ -31,7 +31,7 @@ body{background:var(--off);color:var(--ink);font-family:'DM Sans',sans-serif;ove
 /* CURSOR */
 #c-dot,#c-ring{position:fixed;top:0;left:0;pointer-events:none;z-index:99999;border-radius:50%;transform:translate(-50%,-50%)}
 #c-dot{width:8px;height:8px;background:var(--sage);transition:transform .15s}
-#c-ring{width:36px;height:36px;border:1.5px solid rgba(74,124,89,.4);transition:all .3s cubic-bezier(.16,1,.3,1)}
+#c-ring{width:36px;height:36px;border:1.5px solid rgba(25,0,255,.4);transition:all .3s cubic-bezier(.16,1,.3,1)}
 .c-hover #c-dot{transform:translate(-50%,-50%) scale(0)}
 .c-hover #c-ring{width:48px;height:48px;border-color:var(--sage)}
 @media(pointer:coarse){#c-dot,#c-ring{display:none}}
@@ -94,7 +94,7 @@ nav.solid{background:rgba(245,243,239,.97);backdrop-filter:blur(20px);box-shadow
 #features{background:var(--ink);padding:72px 48px;display:grid;grid-template-columns:repeat(3,1fr);gap:1px;position:relative}
 .feat{background:var(--ink);padding:40px 36px;border-right:1px solid rgba(255,255,255,.05)}
 .feat:last-child{border-right:none}
-.feat-ico{width:48px;height:48px;background:rgba(74,124,89,.15);display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:20px}
+.feat-ico{width:48px;height:48px;background:rgba(25,0,255,.15);display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:20px}
 .feat-h{font-family:'Anton',sans-serif;font-size:22px;letter-spacing:1px;text-transform:uppercase;color:var(--white);margin-bottom:10px}
 .feat-d{font-size:13px;font-weight:300;color:rgba(255,255,255,.45);line-height:1.85}
 
@@ -338,6 +338,24 @@ document.querySelectorAll('.rev').forEach(el=>ro.observe(el));
 /* TOAST */
 function showToast(msg){const t=document.getElementById('toast');document.getElementById('toast-msg').textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),5000);}
 window.showToast=showToast;
+</script>
+<!-- #RiseWithIMPACT Ticker -->
+<style>body{padding-bottom:28px!important}</style>
+<div id="rwi-ticker" style="position:fixed;bottom:0;left:0;right:0;z-index:99999;height:28px;overflow:hidden;background:rgba(25,0,255,0.92);backdrop-filter:blur(6px);display:flex;align-items:center;border-top:1px solid rgba(255,255,255,0.12);pointer-events:none;">
+  <div id="rwi-track" style="display:flex;align-items:center;white-space:nowrap;animation:rwi-scroll 22s linear infinite;will-change:transform;"></div>
+</div>
+<style>
+@keyframes rwi-scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+#rwi-track span{font-family:'DM Mono','JetBrains Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#ffffff;padding:0 28px;opacity:.9}
+#rwi-track span.dot{color:rgba(255,255,255,.35);padding:0 4px;font-size:7px;letter-spacing:0;vertical-align:middle}
+</style>
+<script>
+(function(){
+  var t=document.getElementById('rwi-track');
+  var seg='<span>#RiseWithIMPACT</span><span class="dot">&#10022;</span>';
+  var h='';for(var i=0;i<24;i++)h+=seg;
+  t.innerHTML=h+h;
+})();
 </script>
 </body>
 </html>
